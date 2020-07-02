@@ -39,7 +39,7 @@ void dijkstra() {
             if (shortest[u] == shortest[v0] + d[v0][u]) {
                 totalPaths[u] += totalPaths[v0];
                 maxRescue[u] = 
-                    maxRescue[u] > maxRescue[v0] + rescue[v0]
+                    maxRescue[u] > maxRescue[v0] + rescue[u]
                         ? maxRescue[u]
                             : maxRescue[v0] + rescue[u];
             } else if (shortest[u] > shortest[v0] + d[v0][u]) {
