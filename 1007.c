@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int k;
-int *N;
-
 int main() {
+    int k;
     scanf("%d", &k);
-    N = (int *)malloc(k * sizeof(int));
+    int *N = (int *)malloc(k * sizeof(int));
     int isAllNegative = 1;
     for (int i = 0; i < k; i++) {
         scanf("%d", N + i);
@@ -20,30 +18,31 @@ int main() {
         return 0;
     }
 
-    int sum = N[0];
-    int front = 0;
-    int tail = 0;
-
-    for (int start = 0; start < k; start++) {
-        for (int end = start; end < k; end++) {
-            int tmp = 0;
-            for (int i = start; i <= end; i++) {
-                tmp += N[i];
-            }
-            if (tmp > sum ||
-                (tmp == sum && (
-                    (end - start > tail - front) ||
-                        (end - start == tail - front && start < front)
-                    )
-                )
-            ) {
-                sum = tmp;
-                front = start;
-                tail = end;
-            }
+    int *dp = (int *)malloc(k * sizeof(int));
+    dp[0] = N[0];
+    int *front = (int *)malloc(k * sizeof(int));
+    front[0] = 0;
+    int max = -1;
+    int maxFront = 0;
+    int maxTail;
+    for (int i = 1; i < k; i++) {
+        if (dp[i - 1] < 0) {
+            dp[i] = N[i];
+            front[i] = i;
+        } else {
+            dp[i] = dp[i - 1] + N[i];
+            front[i] = front[i - 1];
+        }
+        if (dp[i] > max) {
+            max = dp[i];
+            maxFront = front[i];
+            maxTail = i;
+        } else if (dp[i] == max && front[i] < maxFront) {
+            maxFront = front[i];
+            maxTail = i;
         }
     }
-    printf("%d %d %d", sum, N[front], N[tail]);
+    printf("%d %d %d", max, N[maxFront], N[maxTail]);
 
     return 0;
 }
