@@ -62,6 +62,17 @@ int main() {
     }
     radix2++;
     unsigned long long value1 = value(d3, n3, radix);
+
+    // Test point 0: If the unknown-radix number has only one digit, the radix has no upper bound
+    if (n4 == 1) {
+        if (d4[0] == value1) {
+            printf("%d", d4[0] + 1);
+        } else {
+            printf("Impossible");
+        }
+        return 0;
+    }
+
     unsigned long long upperBound = value1;
     unsigned long long mid;
     unsigned long long value2;
