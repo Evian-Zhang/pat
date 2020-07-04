@@ -22,9 +22,9 @@ int main() {
     dp[0] = N[0];
     int *front = (int *)malloc(k * sizeof(int));
     front[0] = 0;
-    int max = -1;
+    int max = N[0];
     int maxFront = 0;
-    int maxTail;
+    int maxTail = 0;
     for (int i = 1; i < k; i++) {
         if (dp[i - 1] < 0) {
             dp[i] = N[i];
