@@ -1,86 +1,94 @@
 #include <cstdio>
-#include <cstdlib>
-#include <algorithm>
+#include <queue>
+#include <vector>
 using namespace std;
 
-struct Station {
-    int distance;
-    double price;
+int n = 0;
+int k;
 
-    bool operator<(const struct Station &station) {
-        return this->distance < station.distance;
+int weights[20000][20000] = { 0 };
+bool visited[20000] = { 0 };
+bool inNet[20000] = { 0 };
+
+int DFS(int node, int &lead, int &max, int &peopleCount) {
+    peopleCount++;
+    visited[node] = true;
+    int sum = 0;
+    int leadWeight = 0;
+    for (int i = 0; i < 20000; i++) {
+        if (inNet[i]) {
+            leadWeight += weights[node][i];
+            if (!visited[i] && weights[node][i] > 0) {
+                sum += weights[node][i];
+            }
+        }
+    }
+    for (int i = 0; i < 20000; i++) {
+        if (inNet[i]) {
+            if (!visited[i] && weights[node][i] > 0) {
+                sum += DFS(i, lead, max, peopleCount);
+            }
+        }
+    }
+    if (leadWeight > max) {
+        max = leadWeight;
+        lead = node;
+    }
+    return sum;
+}
+
+struct Leader {
+    int pos;
+    int peopleCount;
+
+    bool operator<(const struct Leader &leader) const {
+        return this->pos > leader.pos;
     }
 };
 
 int main() {
-
-    int cmax, d, n;
-    double davg;
-    scanf("%d %d %lf %d", &cmax, &d, &davg, &n);
-    struct Station *stations = (struct Station *)malloc((n + 1) * sizeof(struct Station));
-    stations[n] = (struct Station){
-        .distance = d,
-        .price = 0.0
-    };
-
-    for (int i = 0; i < n; i++) {
-        int distance;
-        double price;
-        scanf("%lf %d", &price, &distance);
-
-        stations[i] = (struct Station){
-            .distance = distance,
-            .price = price
-        };
+    int lines;
+    scanf("%d %d", &lines, &k);
+    for (int i = 0; i < lines; i++) {
+        char tmp[4];
+        scanf("%s", tmp);
+        int person1 = (tmp[0] - 'A') * 26 * 26 + (tmp[1] - 'A') * 26 + (tmp[2] - 'A');
+        n++;
+        scanf("%s", tmp);
+        int person2 = (tmp[0] - 'A') * 26 * 26 + (tmp[1] - 'A') * 26 + (tmp[2] - 'A');
+        n++;
+        int weight;
+        scanf("%d", &weight);
+        weights[person1][person2] += weight;
+        weights[person2][person1] += weight;
+        inNet[person1] = true;
+        inNet[person2] = true;
     }
 
-    sort(stations, stations + n + 1);
-
-    if (stations[0].distance != 0) {
-        printf("The maximum travel distance = 0.00");
-        return 0;
-    }
-
-    int current = 0;
-    double total = 0.0;
-    double tank = 0.0;
-    while (current < n) {
-        struct Station station = stations[current];
-        current++;
-        double maxCanDrive = davg * cmax;
-        struct Station nextStation;
-        while (current < n + 1) {
-            nextStation = stations[current];
-            if (nextStation.distance > station.distance + maxCanDrive) {
-                current--;
-                nextStation = stations[current];
-                if (nextStation.distance == station.distance) {
-                    printf("The maximum travel distance = %.2lf", station.distance + maxCanDrive);
-                    return 0;
-                } else {
-                    total += (cmax - tank) * station.price;
-                    tank = cmax - (nextStation.distance - station.distance) / davg;
-                }
-                break;
-            }
-            if (nextStation.price < station.price) {
-                double nextDrive = nextStation.distance - station.distance;
-                double needGas = nextDrive / davg - tank;
-                if (needGas < 0) {
-                    needGas = 0;
-                }
-                total += needGas * station.price;
-                tank -= nextDrive / davg;
-                if (tank < 0) {
-                    tank = 0;
-                }
-                break;
-            }
-            current++;
+    priority_queue<struct Leader> leaders;
+    for (int person = 0; person < 20000; person++) {
+        if (!inNet[person] || visited[person]) { continue; }
+        int lead = -1;
+        int max = 0;
+        int peopleCount = 0;
+        int total = DFS(person, lead, max, peopleCount);
+        if (peopleCount > 2 && total > k) {
+            leaders.push((struct Leader){
+                .pos = lead,
+                .peopleCount = peopleCount
+            });
         }
     }
 
-    printf("%.2lf", total);
+    printf("%d", leaders.size());
+    while (!leaders.empty()) {
+        struct Leader leader = leaders.top();
+        leaders.pop();
+        char ch1 = leader.pos / (26 * 26) + 'A';
+        char ch2 = (leader.pos / 26) % 26 + 'A';
+        char ch3 = leader.pos % 26 + 'A';
+        printf("\n%c%c%c %d", ch1, ch2, ch3, leader.peopleCount);
+    }
 
     return 0;
 }
